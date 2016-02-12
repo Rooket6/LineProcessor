@@ -6,7 +6,18 @@ import java.util.List;
 
 public class LineProcessor {
 
+	
 	public static double[][] ProcessImage(List<List<Double>> input) {
+		
+		input.add(new ArrayList<Double>());
+		int viewIndex = input.size() - 1;
+		for (int i = 0; i < input.get(0).size(); i ++) {
+			input.get(viewIndex).add((double) i);
+		}
+		
+		
+		
+		
 		double[][] goals = new double[2][];
 		
 		
@@ -55,5 +66,7 @@ public class LineProcessor {
 		return smallestValueIndex;
 		
 	}
+	
+	
 
 }
