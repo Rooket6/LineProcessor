@@ -1,6 +1,9 @@
+package lineProcessor;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JFrame;
 
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
@@ -8,13 +11,18 @@ public class LineProcessor {
 
 	public static void main(String[] args) {
 
+		JFrame frame = new JFrame();
+		frame.setSize(1000, 800);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		GoalComponent goalComponent = new GoalComponent();
+		
 		int maxWidthIndex;
 		double minX;
 		double maxX;
 		double minY;
 		double maxY;
 		
-		double marginOfError = 5; // Difference between detected contour width and points of lines
+		double marginOfError = 8.5; // Difference between detected contour width and points of lines
 		List<Point2D.Double> points = new ArrayList<Point2D.Double>();
 		Point2D.Double bottomLeftPoint;
 		Point2D.Double bottomRightPoint;
@@ -28,6 +36,7 @@ public class LineProcessor {
 				
 		while (true) {
 			
+			// Waits a second before updating
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException ex) {
@@ -45,6 +54,7 @@ public class LineProcessor {
 			Object[] y1Coordinates = (Object[]) table.getSubTable("myLinesReport").getValue("y1");
 			Object[] x2Coordinates = (Object[]) table.getSubTable("myLinesReport").getValue("x2");
 			Object[] y2Coordinates = (Object[]) table.getSubTable("myLinesReport").getValue("y2");
+			Object[] angles = (Object[]) table.getSubTable("myLinesReport").getValue("angle");
 			
 			// Picks the goal with the biggest width for optimal shooting space
 			maxWidthIndex = 0;
@@ -68,13 +78,24 @@ public class LineProcessor {
 				if (x1 >= minX - marginOfError && x1 <= maxX + marginOfError &&
 					x2 >= minX - marginOfError && x2 <= maxX + marginOfError &&
 					y1 >= minY - marginOfError && y1 <= maxY + marginOfError &&
-					y1 >= minY - marginOfError && y1 <= maxY + marginOfError) {
+					y2 >= minY - marginOfError && y2 <= maxY + marginOfError) {
 					
 					points.add(new Point2D.Double(x1, y1));
 					points.add(new Point2D.Double(x2, y2));
 				}
 				
 			}
+
+//			int pointIndex = 0;
+//			Point2D.Double bottomMostPoint = points.get(0);
+//			for (int i = 0; i < points.size(); i++) {
+//				if (points.get(i).getY() > bottomMostPoint.getY()) { 
+//					bottomMostPoint = points.get(i);
+//					pointIndex = i;
+//				}
+//			}
+//			System.out.println("BOTTOM MOST POINT: (" + bottomMostPoint.getX() + ", " + bottomMostPoint.getY() + ")");
+//			System.out.println("ANGLE: " + angles[pointIndex]);
 
 			// Save all of the corner points
 			topLeftPoint = new Point2D.Double((double)goalXs[maxWidthIndex], (double)goalYs[maxWidthIndex]);
@@ -102,6 +123,20 @@ public class LineProcessor {
 			System.out.println("TopRightPoint: (" + topRightPoint.getX() + ", " + topRightPoint.getY() + ")");
 			System.out.println("BottomRightPoint: (" + bottomRightPoint.getX() + ", " + bottomRightPoint.getY() + ")");
 			System.out.println();
+			
+			// Update display values
+			goalComponent.setGoalBounds(minX, minY, maxX - minX, maxY - minY);
+			goalComponent.setTopLeftPoint(topLeftPoint);
+			goalComponent.setBottomLeftPoint(bottomLeftPoint);
+			goalComponent.setTopRightPoint(topRightPoint);
+			goalComponent.setBottomRightPoint(bottomRightPoint);
+			
+			// Display results for testing
+			frame.remove(goalComponent);
+			frame.add(goalComponent);
+			frame.revalidate();
+			frame.repaint();
+			frame.setVisible(true);
 			
 			// Clear list for next iteration
 			points.clear();
